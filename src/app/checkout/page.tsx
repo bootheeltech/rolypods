@@ -4,36 +4,55 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { getProduct } from "@/lib/products";
-
-const SHIPPING_FLAT_RATE = 12.5;
-const FREE_SHIPPING_THRESHOLD = 75;
+import { shippingFor } from "@/lib/shipping";
+import { fetchStock } from "@/lib/useLiveStock";
 
 export default function CheckoutPage() {
-  const { items, subtotal, clearCart } = useCart();
-  const [submitted, setSubmitted] = useState(false);
-  const [orderNumber, setOrderNumber] = useState("");
-  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const { items, subtotal, setQuantity } = useCart();
+  const [agreed, setAgreed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT_RATE;
+  const shipping = shippingFor(subtotal);
   const total = subtotal + shipping;
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handlePay(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const generated = `RP-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderNumber(generated);
-    setSubmitted(true);
-    clearCart();
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ items, agreed }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        url?: string;
+        error?: string;
+        slug?: string;
+        available?: number;
+      };
+      if (!res.ok || !data.url) {
+        // Someone bought the last few while this cart sat open: trim the cart to what's left.
+        if (res.status === 409 && data.slug && typeof data.available === "number") {
+          setQuantity(data.slug, data.available);
+          fetchStock(true);
+        }
+        throw new Error(data.error || "We couldn't start checkout. Please try again.");
+      }
+      window.location.assign(data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "We couldn't start checkout. Please try again.");
+      setSubmitting(false);
+    }
   }
 
-  if (items.length === 0 && !submitted) {
+  if (items.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6">
-        <h1 className="font-serif text-3xl font-bold text-bark dark:text-cream">
-          Nothing to check out yet
-        </h1>
-        <p className="mt-3 text-bark/70 dark:text-cream-dark/80">
-          Add a few isopods to your cart first.
-        </p>
+        <h1 className="font-serif text-3xl font-bold text-bark dark:text-cream">Nothing to check out yet</h1>
+        <p className="mt-3 text-bark/70 dark:text-cream-dark/80">Add a few isopods to your cart first.</p>
+        {error && <p className="mt-3 text-sm text-blush-dark">{error}</p>}
         <Link
           href="/shop"
           className="mt-6 inline-block rounded-full bg-moss px-6 py-3 text-sm font-semibold text-white transition hover:bg-moss-dark"
@@ -44,110 +63,49 @@ export default function CheckoutPage() {
     );
   }
 
-  if (submitted) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6">
-        <span className="text-5xl">🪲</span>
-        <h1 className="mt-4 font-serif text-3xl font-bold text-bark dark:text-cream">
-          Order request received!
-        </h1>
-        <p className="mt-3 text-bark/70 dark:text-cream-dark/80">
-          Your order reference is <strong className="text-moss">{orderNumber}</strong>.
-          This is a demo checkout — no payment has been charged. We&apos;ll
-          follow up by email with an invoice and shipping timeline, or reach
-          out any time at{" "}
-          <a href="mailto:support@rolypods.com" className="underline">
-            support@rolypods.com
-          </a>
-          .
-        </p>
-        <Link
-          href="/shop"
-          className="mt-6 inline-block rounded-full bg-moss px-6 py-3 text-sm font-semibold text-white transition hover:bg-moss-dark"
-        >
-          Continue Shopping
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-      <h1 className="font-serif text-3xl font-bold text-bark dark:text-cream">
-        Checkout
-      </h1>
+      <h1 className="font-serif text-3xl font-bold text-bark dark:text-cream">Checkout</h1>
       <p className="mt-2 max-w-2xl text-sm text-bark/70 dark:text-cream-dark/80">
-        This is a preview checkout — placing an order below will not charge a
-        card. It simulates submitting your order request so you can see the
-        full flow.
+        You&apos;ll enter your shipping address and payment on the next screen, a secure checkout page hosted
+        by Stripe. Cards, Apple Pay, and Google Pay are accepted. Your isopods are held for you for 30
+        minutes while you finish.
       </p>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-3">
-        <form onSubmit={handleSubmit} className="space-y-6 lg:col-span-2">
-          <fieldset className="space-y-4 rounded-xl border border-bark/10 p-5 dark:border-cream-dark/10">
-            <legend className="px-1 font-serif text-lg font-bold text-bark dark:text-cream">
-              Contact
-            </legend>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm">
-                <span className="text-bark/70 dark:text-cream-dark/80">Full name</span>
-                <input required type="text" className="mt-1 w-full rounded-md border border-bark/20 bg-transparent px-3 py-2 dark:border-cream-dark/30" />
-              </label>
-              <label className="block text-sm">
-                <span className="text-bark/70 dark:text-cream-dark/80">Email</span>
-                <input required type="email" className="mt-1 w-full rounded-md border border-bark/20 bg-transparent px-3 py-2 dark:border-cream-dark/30" />
-              </label>
-            </div>
-            <label className="block text-sm">
-              <span className="text-bark/70 dark:text-cream-dark/80">Phone (for delivery-day contact)</span>
-              <input required type="tel" className="mt-1 w-full rounded-md border border-bark/20 bg-transparent px-3 py-2 dark:border-cream-dark/30" />
-            </label>
-          </fieldset>
-
-          <fieldset className="space-y-4 rounded-xl border border-bark/10 p-5 dark:border-cream-dark/10">
-            <legend className="px-1 font-serif text-lg font-bold text-bark dark:text-cream">
-              Shipping address
-            </legend>
-            <label className="block text-sm">
-              <span className="text-bark/70 dark:text-cream-dark/80">Street address</span>
-              <input required type="text" className="mt-1 w-full rounded-md border border-bark/20 bg-transparent px-3 py-2 dark:border-cream-dark/30" />
-            </label>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <label className="block text-sm">
-                <span className="text-bark/70 dark:text-cream-dark/80">City</span>
-                <input required type="text" className="mt-1 w-full rounded-md border border-bark/20 bg-transparent px-3 py-2 dark:border-cream-dark/30" />
-              </label>
-              <label className="block text-sm">
-                <span className="text-bark/70 dark:text-cream-dark/80">State</span>
-                <input required type="text" className="mt-1 w-full rounded-md border border-bark/20 bg-transparent px-3 py-2 dark:border-cream-dark/30" />
-              </label>
-              <label className="block text-sm">
-                <span className="text-bark/70 dark:text-cream-dark/80">ZIP code</span>
-                <input required type="text" className="mt-1 w-full rounded-md border border-bark/20 bg-transparent px-3 py-2 dark:border-cream-dark/30" />
-              </label>
-            </div>
-            <label className="block text-sm">
-              <span className="text-bark/70 dark:text-cream-dark/80">Delivery notes (porch instructions, etc.)</span>
-              <textarea rows={3} className="mt-1 w-full rounded-md border border-bark/20 bg-transparent px-3 py-2 dark:border-cream-dark/30" />
-            </label>
-          </fieldset>
-
+        <form onSubmit={handlePay} className="space-y-6 lg:col-span-2">
           <fieldset className="space-y-3 rounded-xl border border-bark/10 p-5 dark:border-cream-dark/10">
             <legend className="px-1 font-serif text-lg font-bold text-bark dark:text-cream">
-              Live animal shipping agreement
+              Before you pay
             </legend>
-            <label className="flex items-start gap-2 text-sm text-bark/80 dark:text-cream-dark/90">
+            <ul className="space-y-2 text-sm text-bark/80 dark:text-cream-dark/90">
+              <li className="flex gap-2">
+                <span className="text-moss">•</span>
+                <span>We ship Monday through Wednesday only, so your isopods never sit in a warehouse over a weekend.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-moss">•</span>
+                <span>
+                  If it&apos;s below 35°F or above 90°F along the route, we hold your order and email you a new ship
+                  date. Heat packs go in every cold-weather box.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-moss">•</span>
+                <span>Continental US addresses only. No PO boxes, Alaska, Hawaii, or Puerto Rico.</span>
+              </li>
+            </ul>
+            <label className="flex items-start gap-2 pt-2 text-sm text-bark/80 dark:text-cream-dark/90">
               <input
                 required
                 type="checkbox"
-                checked={ageConfirmed}
-                onChange={(e) => setAgeConfirmed(e.target.checked)}
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
                 className="mt-1"
               />
               <span>
-                I confirm I am 18 or older, someone will be available to
-                receive this shipment on its delivery day, and I&apos;ve read
-                the{" "}
+                I&apos;m 18 or older, someone will be available to bring the box inside on delivery day, and
+                I&apos;ve read the{" "}
                 <Link href="/shipping" className="underline">
                   shipping &amp; live arrival guarantee
                 </Link>{" "}
@@ -156,19 +114,26 @@ export default function CheckoutPage() {
             </label>
           </fieldset>
 
+          {error && (
+            <p role="alert" className="rounded-xl border border-blush/40 bg-blush/10 px-4 py-3 text-sm text-blush-dark">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
-            disabled={!ageConfirmed}
+            disabled={!agreed || submitting}
             className="w-full rounded-full bg-moss px-6 py-3 text-sm font-semibold text-white transition hover:bg-moss-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Place Order — ${total.toFixed(2)}
+            {submitting ? "Opening secure checkout..." : `Continue to secure payment · $${total.toFixed(2)}`}
           </button>
+          <p className="text-center text-xs text-bark/50 dark:text-cream-dark/60">
+            Payments are processed by Stripe. RolyPods never sees or stores your card number.
+          </p>
         </form>
 
         <div className="h-fit rounded-xl border border-bark/10 p-5 dark:border-cream-dark/10">
-          <h2 className="font-serif text-lg font-bold text-bark dark:text-cream">
-            Order summary
-          </h2>
+          <h2 className="font-serif text-lg font-bold text-bark dark:text-cream">Order summary</h2>
           <ul className="mt-4 space-y-3">
             {items.map((item) => {
               const product = getProduct(item.slug);
@@ -191,7 +156,7 @@ export default function CheckoutPage() {
               <span>${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-bark/70 dark:text-cream-dark/80">
-              <span>Shipping</span>
+              <span>Insulated shipping</span>
               <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
             </div>
             <div className="flex justify-between pt-1 font-semibold text-bark dark:text-cream">

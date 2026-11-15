@@ -2,11 +2,12 @@ import Link from "next/link";
 import { products } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 import IsopodIllustration from "@/components/IsopodIllustration";
+import WaitlistForm from "@/components/WaitlistForm";
 
 const FEATURED_SLUGS = ["dairy-cow-isopod", "montenegro-isopod", "rubber-ducky-isopod", "zebra-isopod"];
 
 const TRUST_POINTS = [
-  { title: "Live Arrival Guarantee", body: "Every isopod arrives alive or we replace/refund it — no questions asked." },
+  { title: "Live Arrival Guarantee", body: "Every isopod arrives alive or we replace/refund it, no questions asked." },
   { title: "Captive Bred In-House", body: "Every colony is bred and raised on-site, never wild-collected." },
   { title: "Careful, Insulated Shipping", body: "Heat/cold packs and weather holds keep your order safe in transit." },
 ];
@@ -22,24 +23,24 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
           <div>
             <span className="inline-block rounded-full bg-blush/15 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blush-dark">
-              Only for Fans of Isopods.
+              Now shipping: Dairy Cow isopods
             </span>
             <h1 className="mt-4 font-serif text-4xl font-bold leading-tight text-bark dark:text-cream sm:text-5xl">
               Common &amp; designer isopods,
               <br /> bred with love, shipped with care.
             </h1>
             <p className="mt-5 max-w-lg text-lg text-bark/70 dark:text-cream-dark/80">
-              RolyPods is a small-batch isopod breeding operation shipping
-              nationwide. From beginner-friendly cleanup crews to rare
-              designer morphs, every roly poly comes with a live arrival
-              guarantee.
+              RolyPods is a small-batch isopod breeder shipping across the
+              continental US. Our first batch of Dairy Cow isopods is ready
+              now, and every order comes with a live arrival guarantee. More
+              species are on the way: join the waitlist to hear first.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/shop"
+                href="/shop/dairy-cow-isopod"
                 className="rounded-full bg-moss px-6 py-3 text-sm font-semibold text-white transition hover:bg-moss-dark"
               >
-                Shop the Gallery
+                Shop Dairy Cows
               </Link>
               <Link
                 href="/care"
@@ -81,10 +82,10 @@ export default function Home() {
         <div className="flex items-end justify-between">
           <div>
             <h2 className="font-serif text-2xl font-bold text-bark dark:text-cream sm:text-3xl">
-              Fan Favorites
+              The Lineup
             </h2>
             <p className="mt-1 text-bark/70 dark:text-cream-dark/80">
-              A few of the species our customers keep coming back for.
+              Dairy Cows ship now. The rest are growing out in our colonies; join a waitlist to be first in line.
             </p>
           </div>
           <Link href="/shop" className="hidden text-sm font-semibold text-moss hover:underline sm:inline">
@@ -106,19 +107,16 @@ export default function Home() {
       <section className="border-t border-bark/10 bg-moss/5 dark:bg-moss/10">
         <div className="mx-auto max-w-4xl px-4 py-14 text-center sm:px-6">
           <h2 className="font-serif text-2xl font-bold text-bark dark:text-cream sm:text-3xl">
-            Join the isopod side.
+            Be first when new species drop.
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-bark/70 dark:text-cream-dark/80">
-            Whether you&apos;re stocking a bioactive terrarium or starting your
-            first cleanup crew colony, we&apos;ve got a species and a care
-            guide for you.
+            Montenegros, Rubber Duckies, Zebras and more are coming. Leave
+            your email and we&apos;ll tell you before anyone else when a new
+            batch is ready to ship.
           </p>
-          <Link
-            href="/shop"
-            className="mt-6 inline-block rounded-full bg-blush px-7 py-3 text-sm font-semibold text-white transition hover:bg-blush-dark"
-          >
-            Browse the Gallery
-          </Link>
+          <div className="mx-auto mt-6 max-w-lg text-left">
+            <WaitlistForm slug="any" />
+          </div>
         </div>
       </section>
     </div>

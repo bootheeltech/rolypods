@@ -4,18 +4,23 @@ interface Props {
   colors: Product["colors"];
   pattern: Product["pattern"];
   className?: string;
+  label?: string;
+  /** Explicit pixel size (needed when rendered inside next/og images). */
+  size?: number;
 }
 
-export default function IsopodIllustration({ colors, pattern, className }: Props) {
+export default function IsopodIllustration({ colors, pattern, className, label = "Stylized isopod illustration", size }: Props) {
   const [base, accent, dark] = colors;
   const segments = [0, 1, 2, 3, 4, 5, 6];
 
   return (
     <svg
       viewBox="0 0 240 240"
+      width={size}
+      height={size}
       className={className}
       role="img"
-      aria-label="Stylized isopod illustration"
+      aria-label={label}
     >
       <defs>
         <radialGradient id={`bg-${base}`} cx="50%" cy="35%" r="75%">

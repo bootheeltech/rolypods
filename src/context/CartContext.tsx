@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { products } from "@/lib/products";
+import { isPurchasable, products } from "@/lib/products";
 
 export interface CartItem {
   slug: string;
@@ -42,7 +42,9 @@ function readItems(): CartItem[] {
   if (raw === cachedRaw) return cachedItems;
   cachedRaw = raw;
   try {
-    cachedItems = raw ? JSON.parse(raw) : EMPTY_ITEMS;
+    // Drop anything that is no longer sellable (e.g. carts saved before a species went waitlist-only).
+    const parsed: CartItem[] = raw ? JSON.parse(raw) : EMPTY_ITEMS;
+    cachedItems = parsed.filter((i) => isPurchasable(i.slug) && i.quantity > 0);
   } catch {
     cachedItems = EMPTY_ITEMS;
   }

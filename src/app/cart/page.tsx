@@ -1,15 +1,32 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { getProduct } from "@/lib/products";
+import { FREE_SHIPPING_THRESHOLD, shippingFor } from "@/lib/shipping";
+import { fetchStock, useLiveStock } from "@/lib/useLiveStock";
 import IsopodIllustration from "@/components/IsopodIllustration";
-
-const SHIPPING_FLAT_RATE = 12.5;
-const FREE_SHIPPING_THRESHOLD = 75;
 
 export default function CartPage() {
   const { items, setQuantity, removeItem, subtotal } = useCart();
+  const stock = useLiveStock();
+
+  // Coming back from Stripe without paying: release the held stock right away.
+  useEffect(() => {
+    const orderId = new URLSearchParams(window.location.search).get("canceled");
+    if (!orderId) return;
+    fetch("/api/checkout/cancel", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ orderId }),
+    })
+      .catch(() => undefined)
+      .finally(() => {
+        fetchStock(true);
+        window.history.replaceState(null, "", "/cart");
+      });
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -30,7 +47,7 @@ export default function CartPage() {
     );
   }
 
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT_RATE;
+  const shipping = shippingFor(subtotal);
   const total = subtotal + shipping;
 
   return (
@@ -79,7 +96,9 @@ export default function CartPage() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => setQuantity(item.slug, Math.min(product.stockCount, item.quantity + 1))}
+                  onClick={() =>
+                    setQuantity(item.slug, Math.min(stock?.[item.slug] ?? product.stockCount, item.quantity + 1))
+                  }
                   className="px-3 py-1.5 text-bark dark:text-cream"
                   aria-label={`Increase quantity of ${product.name}`}
                 >

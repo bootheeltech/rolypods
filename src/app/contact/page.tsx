@@ -10,7 +10,7 @@ export default function ContactPage() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const subject = encodeURIComponent(`RolyPods inquiry from ${name || "website visitor"}`);
-    const body = encodeURIComponent(`${message}\n\n— ${name} (${email})`);
+    const body = encodeURIComponent(`${message}\n\nFrom: ${name} (${email})`);
     window.location.href = `mailto:support@rolypods.com?subject=${subject}&body=${body}`;
   }
 

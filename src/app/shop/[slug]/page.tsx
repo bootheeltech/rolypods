@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProduct, products } from "@/lib/products";
+import { getProduct, products, type Product } from "@/lib/products";
+import { SHIPPING_FLAT_RATE } from "@/lib/shipping";
+import { absoluteUrl, productImageUrl, productUrl, SITE_NAME, SITE_URL } from "@/lib/site";
+import JsonLd from "@/components/JsonLd";
 import IsopodIllustration from "@/components/IsopodIllustration";
 import AddToCartPanel from "@/components/AddToCartPanel";
 import ProductCard from "@/components/ProductCard";
@@ -18,9 +21,88 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getProduct(slug);
   if (!product) return {};
+  const title = product.inStock
+    ? `${product.name}s for Sale (${product.scientificName.split(" '")[0]})`
+    : `${product.name} (${product.scientificName}): Join the Waitlist`;
+  const description = product.inStock
+    ? `Buy live ${product.name}s, $${product.price} ${product.unit}. ${product.tagline} Captive bred, shipped insulated with a live arrival guarantee.`
+    : `${product.tagline} Join the RolyPods waitlist to be emailed when captive-bred ${product.name}s are ready to ship.`;
   return {
-    title: `${product.name} (${product.scientificName}) — RolyPods`,
-    description: product.tagline,
+    title,
+    description,
+    alternates: { canonical: `/shop/${product.slug}` },
+    openGraph: { type: "website", title, description, url: `/shop/${product.slug}` },
+  };
+}
+
+function productJsonLd(product: Product) {
+  const url = productUrl(product);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${url}#product`,
+        name: product.name,
+        alternateName: product.scientificName,
+        description: product.description,
+        image: productImageUrl(product),
+        url,
+        sku: product.slug,
+        category: "Live Animals > Invertebrates > Isopods",
+        brand: { "@type": "Brand", name: SITE_NAME },
+        additionalProperty: [
+          { "@type": "PropertyValue", name: "Scientific name", value: product.scientificName },
+          { "@type": "PropertyValue", name: "Difficulty", value: product.difficulty },
+          { "@type": "PropertyValue", name: "Adult size", value: product.size },
+          { "@type": "PropertyValue", name: "Temperature", value: product.temperature },
+          { "@type": "PropertyValue", name: "Humidity", value: product.humidity },
+        ],
+        offers: {
+          "@type": "Offer",
+          url,
+          priceCurrency: "USD",
+          price: product.price.toFixed(2),
+          availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          itemCondition: "https://schema.org/NewCondition",
+          seller: { "@id": `${SITE_URL}/#org` },
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            shippingRate: { "@type": "MonetaryAmount", value: SHIPPING_FLAT_RATE.toFixed(2), currency: "USD" },
+            shippingDestination: { "@type": "DefinedRegion", addressCountry: "US" },
+            deliveryTime: {
+              "@type": "ShippingDeliveryTime",
+              handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 5, unitCode: "DAY" },
+              transitTime: { "@type": "QuantitativeValue", minValue: 1, maxValue: 3, unitCode: "DAY" },
+            },
+          },
+          hasMerchantReturnPolicy: {
+            "@type": "MerchantReturnPolicy",
+            applicableCountry: "US",
+            returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+          },
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Shop", item: absoluteUrl("/shop") },
+          { "@type": "ListItem", position: 2, name: product.name, item: url },
+        ],
+      },
+      ...(product.faqs?.length
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: product.faqs.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            },
+          ]
+        : []),
+    ],
   };
 }
 
@@ -30,7 +112,8 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const related = products
-    .filter((p) => p.slug !== product.slug && p.category === product.category)
+    .filter((p) => p.slug !== product.slug)
+    .sort((a, b) => Number(b.inStock) - Number(a.inStock) || Number(b.category === product.category) - Number(a.category === product.category))
     .slice(0, 3);
 
   const specs: [string, string][] = [
@@ -39,11 +122,12 @@ export default async function ProductPage({ params }: Props) {
     ["Temperature", product.temperature],
     ["Humidity", product.humidity],
     ["Diet", product.diet],
-    ["Stock", product.inStock ? `${product.stockCount} available` : "Sold out"],
+    ["Availability", product.inStock ? "Shipping now" : "Waitlist only"],
   ];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <JsonLd data={productJsonLd(product)} />
       <nav className="mb-6 text-sm text-bark/60 dark:text-cream-dark/60">
         <Link href="/shop" className="hover:text-moss">Shop</Link>
         <span className="mx-2">/</span>
@@ -56,6 +140,7 @@ export default async function ProductPage({ params }: Props) {
             colors={product.colors}
             pattern={product.pattern}
             className="w-full"
+            label={`Illustration of a ${product.name} (${product.scientificName})`}
           />
         </div>
 
@@ -117,9 +202,25 @@ export default async function ProductPage({ params }: Props) {
               </li>
             ))}
           </ul>
+
+          {product.faqs && product.faqs.length > 0 && (
+            <>
+              <h2 className="mt-8 font-serif text-xl font-bold text-bark dark:text-cream">
+                {product.name} FAQ
+              </h2>
+              <dl className="mt-3 space-y-4">
+                {product.faqs.map((f) => (
+                  <div key={f.q}>
+                    <dt className="font-semibold text-bark dark:text-cream">{f.q}</dt>
+                    <dd className="mt-1 text-bark/80 dark:text-cream-dark/90">{f.a}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
         </div>
 
-        <div className="rounded-xl border border-moss/30 bg-moss/5 p-5 dark:bg-moss/10">
+        <div className="h-fit rounded-xl border border-moss/30 bg-moss/5 p-5 dark:bg-moss/10">
           <h2 className="font-serif text-lg font-bold text-bark dark:text-cream">
             Shipping &amp; live arrival
           </h2>
@@ -127,7 +228,7 @@ export default async function ProductPage({ params }: Props) {
             Every order ships in an insulated box with heat or cold packs as
             needed for your local weather, plus moist substrate and air holes
             for the trip. If anything arrives deceased, we replace it or
-            refund it — no questions asked.
+            refund it, no questions asked.
           </p>
           <Link
             href="/shipping"

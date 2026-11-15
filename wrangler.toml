@@ -1,0 +1,16 @@
+# Cloudflare Pages config for rolypods.com (project "rolypods", auto-deploys from GitHub master).
+# Once this file exists, Pages reads bindings from here instead of the dashboard.
+# Secrets are NOT stored here. Set them with:
+#   npx wrangler pages secret put STRIPE_SECRET_KEY --project-name rolypods
+#   npx wrangler pages secret put STRIPE_WEBHOOK_SECRET --project-name rolypods
+name = "rolypods"
+pages_build_output_dir = "out"
+compatibility_date = "2026-07-26"
+# Optional: set SITE_URL as a var to force redirect URLs; otherwise the request origin is used.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rolypods"
+database_id = "541834ea-f38d-4ae5-8e66-1988b3d7937f"
+migrations_dir = "migrations"
+

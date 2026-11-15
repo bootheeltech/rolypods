@@ -17,9 +17,13 @@ export default function ProductCard({ product }: { product: Product }) {
         <span className="absolute left-3 top-3 rounded-full bg-bark/85 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cream">
           {product.category === "designer" ? "Designer" : "Common"}
         </span>
-        {!product.inStock && (
+        {product.inStock ? (
+          <span className="absolute right-3 top-3 rounded-full bg-moss px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+            Available now
+          </span>
+        ) : (
           <span className="absolute right-3 top-3 rounded-full bg-blush px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
-            Sold out
+            Waitlist
           </span>
         )}
       </div>
@@ -38,7 +42,7 @@ export default function ProductCard({ product }: { product: Product }) {
             ${product.price.toFixed(2)}
           </span>
           <span className="text-sm text-bark/60 dark:text-cream-dark/60">
-            {product.unit}
+            {product.inStock ? product.unit : "Join waitlist →"}
           </span>
         </div>
       </div>

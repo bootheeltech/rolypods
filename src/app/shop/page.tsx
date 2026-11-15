@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { products, type Category } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
+import WaitlistForm from "@/components/WaitlistForm";
 
 type Filter = Category | "all";
 
@@ -16,7 +17,10 @@ export default function ShopPage() {
   const [filter, setFilter] = useState<Filter>("all");
 
   const visible = useMemo(
-    () => products.filter((p) => filter === "all" || p.category === filter),
+    () =>
+      products
+        .filter((p) => filter === "all" || p.category === filter)
+        .sort((a, b) => Number(b.inStock) - Number(a.inStock)),
     [filter]
   );
 
@@ -28,9 +32,19 @@ export default function ShopPage() {
         </h1>
         <p className="mt-3 text-bark/70 dark:text-cream-dark/80">
           Every isopod is captive-bred here at RolyPods and shipped with our
-          live arrival guarantee. Tap any species for full care specs, size,
-          and temperament before you add it to your colony.
+          live arrival guarantee. Dairy Cows are available now. Every other
+          species is waitlist only while our colonies grow out; tap one to
+          join its list.
         </p>
+      </div>
+
+      <div className="mt-6 max-w-2xl">
+        <WaitlistForm
+          slug="any"
+          compact
+          heading="Get new-species alerts"
+          blurb="One email when a new batch is ready to ship. No spam."
+        />
       </div>
 
       <div className="mt-6 flex gap-2">
