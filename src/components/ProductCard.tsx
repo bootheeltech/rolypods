@@ -9,11 +9,23 @@ export default function ProductCard({ product }: { product: Product }) {
       className="group flex flex-col overflow-hidden rounded-2xl border border-bark/10 bg-white/60 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-cream-dark/10 dark:bg-cream-dark/5"
     >
       <div className="relative aspect-square overflow-hidden bg-cream-dark">
-        <IsopodIllustration
-          colors={product.colors}
-          pattern={product.pattern}
-          className="h-full w-full transition duration-300 group-hover:scale-105"
-        />
+        {product.images?.length ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={product.images[0].src}
+            alt={product.images[0].alt}
+            width={1600}
+            height={1600}
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <IsopodIllustration
+            colors={product.colors}
+            pattern={product.pattern}
+            className="h-full w-full transition duration-300 group-hover:scale-105"
+          />
+        )}
         <span className="absolute left-3 top-3 rounded-full bg-bark/85 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cream">
           {product.category === "designer" ? "Designer" : "Common"}
         </span>

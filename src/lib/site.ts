@@ -17,6 +17,7 @@ export function productUrl(p: Product) {
 }
 
 export function productImageUrl(p: Product) {
+  if (p.images?.length) return absoluteUrl(p.images[0].src.replace(/\.webp$/, ".jpg"));
   return absoluteUrl(`/shop/${p.slug}/opengraph-image`);
 }
 
