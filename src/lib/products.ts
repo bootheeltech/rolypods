@@ -23,6 +23,8 @@ export interface Product {
   inStock: boolean;
   /** Starting inventory. Live remaining stock comes from the database via /api/stock. */
   stockCount: number;
+  /** Real photos in /public. The first is the main photo; without photos the illustration is shown. */
+  images?: { src: string; alt: string }[];
 }
 
 export const products: Product[] = [
@@ -78,6 +80,20 @@ export const products: Product[] = [
     pattern: "spotted",
     inStock: true,
     stockCount: 100,
+    images: [
+      {
+        src: "/images/products/dairy-cow-isopod-1.webp",
+        alt: "Close-up of Dairy Cow isopods showing their black and white spotted pattern on cork bark",
+      },
+      {
+        src: "/images/products/dairy-cow-isopod-2.webp",
+        alt: "A group of Dairy Cow isopods on a piece of cork bark held in hand",
+      },
+      {
+        src: "/images/products/dairy-cow-isopod-3.webp",
+        alt: "Dairy Cow isopod colony on cork bark with moss",
+      },
+    ],
   },
   {
     slug: "powder-blue-isopod",

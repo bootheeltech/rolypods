@@ -135,14 +135,50 @@ export default async function ProductPage({ params }: Props) {
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-2xl border border-bark/10 bg-cream-dark dark:border-cream-dark/10">
-          <IsopodIllustration
-            colors={product.colors}
-            pattern={product.pattern}
-            className="w-full"
-            label={`Illustration of a ${product.name} (${product.scientificName})`}
-          />
-        </div>
+        {product.images?.length ? (
+          <div className="flex flex-col gap-3">
+            {/* eslint-disable @next/next/no-img-element */}
+            <div className="overflow-hidden rounded-2xl border border-bark/10 bg-cream-dark dark:border-cream-dark/10">
+              <img
+                src={product.images[0].src}
+                alt={product.images[0].alt}
+                width={1600}
+                height={1600}
+                className="aspect-square w-full object-cover"
+              />
+            </div>
+            {product.images.length > 1 && (
+              <div className="grid grid-cols-2 gap-3">
+                {product.images.slice(1).map((img) => (
+                  <a
+                    key={img.src}
+                    href={img.src}
+                    className="overflow-hidden rounded-xl border border-bark/10 bg-cream-dark dark:border-cream-dark/10"
+                  >
+                    <img
+                      src={img.src}
+                      alt={img.alt}
+                      width={1600}
+                      height={1600}
+                      loading="lazy"
+                      className="aspect-square w-full object-cover transition duration-300 hover:scale-105"
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
+            {/* eslint-enable @next/next/no-img-element */}
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-bark/10 bg-cream-dark dark:border-cream-dark/10">
+            <IsopodIllustration
+              colors={product.colors}
+              pattern={product.pattern}
+              className="w-full"
+              label={`Illustration of a ${product.name} (${product.scientificName})`}
+            />
+          </div>
+        )}
 
         <div>
           <span className="rounded-full bg-bark/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-bark dark:bg-cream-dark/10 dark:text-cream-dark">
