@@ -19,5 +19,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     badge: p.inStock ? `$${p.price.toFixed(2)} ${p.unit} · Shipping now` : "Join the waitlist",
     colors: p.colors,
     pattern: p.pattern,
+    photo: p.photos?.[0]?.file,
   });
 }

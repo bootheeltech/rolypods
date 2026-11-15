@@ -6,7 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { getProduct } from "@/lib/products";
 import { FREE_SHIPPING_THRESHOLD, shippingFor } from "@/lib/shipping";
 import { fetchStock, useLiveStock } from "@/lib/useLiveStock";
-import IsopodIllustration from "@/components/IsopodIllustration";
+import ProductImage from "@/components/ProductImage";
 
 export default function CartPage() {
   const { items, setQuantity, removeItem, subtotal } = useCart();
@@ -69,7 +69,7 @@ export default function CartPage() {
                 href={`/shop/${product.slug}`}
                 className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-cream-dark"
               >
-                <IsopodIllustration colors={product.colors} pattern={product.pattern} className="h-full w-full" />
+                <ProductImage product={product} className="h-full w-full" />
               </Link>
               <div className="flex-1">
                 <Link href={`/shop/${product.slug}`} className="font-serif font-semibold text-bark hover:text-moss dark:text-cream">

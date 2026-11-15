@@ -17,6 +17,8 @@ export interface Product {
   careNotes: string[];
   /** Optional species Q&A, shown on the product page and emitted as FAQPage structured data. */
   faqs?: { q: string; a: string }[];
+  /** Real photos in public/photos (base filename, no extension). First one is the main image. */
+  photos?: { file: string; alt: string }[];
   colors: [string, string, string]; // body base, band/pattern, spots; used by the placeholder illustration
   pattern: "plain" | "banded" | "spotted" | "marbled";
   /** true = sellable through checkout. false = waitlist only. */
@@ -73,6 +75,11 @@ export const products: Product[] = [
         q: "How big do Dairy Cow isopods get?",
         a: "Adults reach up to about 20mm (roughly three quarters of an inch), making them one of the larger common isopods in the hobby.",
       },
+    ],
+    photos: [
+      { file: "dairy-cow-isopods-2-closeup", alt: "Close-up of Dairy Cow isopods (Porcellio laevis) showing white bodies with dark spots on cork bark" },
+      { file: "dairy-cow-isopods-1-group", alt: "A group of RolyPods Dairy Cow isopods on a piece of cork bark held in hand" },
+      { file: "dairy-cow-isopods-3-habitat", alt: "Dairy Cow isopods in their enclosure with cork bark, moss, and substrate" },
     ],
     colors: ["#efe9dc", "#2a2a2a", "#232323"],
     pattern: "spotted",
@@ -318,6 +325,10 @@ export const products: Product[] = [
 /** Products that can be added to the cart and paid for. Everything else is waitlist only. */
 export function isPurchasable(slug: string) {
   return products.some((p) => p.slug === slug && p.inStock);
+}
+
+export function photoSrc(file: string, size: "lg" | "sm" = "lg") {
+  return `/photos/${file}${size === "sm" ? "-sm" : ""}.jpg`;
 }
 
 export function getProduct(slug: string) {

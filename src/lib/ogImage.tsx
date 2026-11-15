@@ -1,4 +1,6 @@
 import { Fragment, isValidElement, type ReactNode } from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import IsopodIllustration from "@/components/IsopodIllustration";
 import type { Product } from "@/lib/products";
@@ -38,12 +40,16 @@ export function renderOgImage(opts: {
   badge: string;
   colors: Product["colors"];
   pattern: Product["pattern"];
+  /** Optional real photo (public/photos base filename) used instead of the illustration. */
+  photo?: string;
 }) {
   const svg = toSvg(<IsopodIllustration colors={opts.colors} pattern={opts.pattern} size={480} />).replace(
     "<svg ",
     '<svg xmlns="http://www.w3.org/2000/svg" '
   );
-  const src = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  const src = opts.photo
+    ? `data:image/jpeg;base64,${readFileSync(join(process.cwd(), "public", "photos", `${opts.photo}-sm.jpg`)).toString("base64")}`
+    : `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 
   return new ImageResponse(
     (

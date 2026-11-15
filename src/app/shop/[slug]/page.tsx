@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProduct, products, type Product } from "@/lib/products";
+import { getProduct, photoSrc, products, type Product } from "@/lib/products";
 import { SHIPPING_FLAT_RATE } from "@/lib/shipping";
 import { absoluteUrl, productImageUrl, productUrl, SITE_NAME, SITE_URL } from "@/lib/site";
 import JsonLd from "@/components/JsonLd";
 import IsopodIllustration from "@/components/IsopodIllustration";
+import ProductGallery from "@/components/ProductGallery";
 import AddToCartPanel from "@/components/AddToCartPanel";
 import ProductCard from "@/components/ProductCard";
 
@@ -46,7 +47,9 @@ function productJsonLd(product: Product) {
         name: product.name,
         alternateName: product.scientificName,
         description: product.description,
-        image: productImageUrl(product),
+        image: product.photos?.length
+          ? product.photos.map((p) => absoluteUrl(photoSrc(p.file)))
+          : productImageUrl(product),
         url,
         sku: product.slug,
         category: "Live Animals > Invertebrates > Isopods",
@@ -135,14 +138,18 @@ export default async function ProductPage({ params }: Props) {
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-2xl border border-bark/10 bg-cream-dark dark:border-cream-dark/10">
-          <IsopodIllustration
-            colors={product.colors}
-            pattern={product.pattern}
-            className="w-full"
-            label={`Illustration of a ${product.name} (${product.scientificName})`}
-          />
-        </div>
+        {product.photos?.length ? (
+          <ProductGallery photos={product.photos} />
+        ) : (
+          <div className="h-fit overflow-hidden rounded-2xl border border-bark/10 bg-cream-dark dark:border-cream-dark/10">
+            <IsopodIllustration
+              colors={product.colors}
+              pattern={product.pattern}
+              className="w-full"
+              label={`Illustration of a ${product.name} (${product.scientificName})`}
+            />
+          </div>
+        )}
 
         <div>
           <span className="rounded-full bg-bark/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-bark dark:bg-cream-dark/10 dark:text-cream-dark">

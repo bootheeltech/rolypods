@@ -1,5 +1,5 @@
 import Link from "next/link";
-import IsopodIllustration from "./IsopodIllustration";
+import ProductImage from "./ProductImage";
 import type { Product } from "@/lib/products";
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -9,9 +9,8 @@ export default function ProductCard({ product }: { product: Product }) {
       className="group flex flex-col overflow-hidden rounded-2xl border border-bark/10 bg-white/60 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-cream-dark/10 dark:bg-cream-dark/5"
     >
       <div className="relative aspect-square overflow-hidden bg-cream-dark">
-        <IsopodIllustration
-          colors={product.colors}
-          pattern={product.pattern}
+        <ProductImage
+          product={product}
           className="h-full w-full transition duration-300 group-hover:scale-105"
         />
         <span className="absolute left-3 top-3 rounded-full bg-bark/85 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cream">

@@ -14,5 +14,6 @@ export default function Image() {
     badge: "Now shipping: Dairy Cows",
     colors: dairy.colors,
     pattern: dairy.pattern,
+    photo: dairy.photos?.[0]?.file,
   });
 }

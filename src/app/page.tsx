@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { products } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
-import IsopodIllustration from "@/components/IsopodIllustration";
+import ProductImage from "@/components/ProductImage";
 import WaitlistForm from "@/components/WaitlistForm";
 
 const FEATURED_SLUGS = ["dairy-cow-isopod", "montenegro-isopod", "rubber-ducky-isopod", "zebra-isopod"];
@@ -56,7 +56,7 @@ export default function Home() {
                 key={p.slug}
                 className="overflow-hidden rounded-2xl border border-bark/10 bg-cream-dark shadow-sm dark:border-cream-dark/10"
               >
-                <IsopodIllustration colors={p.colors} pattern={p.pattern} className="w-full" />
+                <ProductImage product={p} className="w-full" priority={p.slug === "dairy-cow-isopod"} />
               </div>
             ))}
           </div>
