@@ -6,9 +6,11 @@ import { FREE_SHIPPING_THRESHOLD, SHIPPING_FLAT_RATE } from "../src/lib/shipping
 
 export interface Env {
   DB: D1Database;
-  STRIPE_SECRET_KEY: string;
-  STRIPE_WEBHOOK_SECRET: string;
-  SITE_URL: string;
+  /** PayPal REST app credentials (developer.paypal.com > Apps & Credentials). */
+  PAYPAL_CLIENT_ID: string;
+  PAYPAL_CLIENT_SECRET: string;
+  /** "live" or "sandbox". Anything other than "live" uses the sandbox. */
+  PAYPAL_ENV?: string;
 }
 
 export { getProduct, isPurchasable, products };
@@ -28,11 +30,16 @@ export function toCents(dollars: number) {
   return Math.round(dollars * 100);
 }
 
+/** 1250 -> "12.50" (PayPal wants decimal strings). */
+export function money(cents: number) {
+  return (cents / 100).toFixed(2);
+}
+
 export function shippingCentsFor(subtotalCents: number) {
   return subtotalCents >= toCents(FREE_SHIPPING_THRESHOLD) ? 0 : toCents(SHIPPING_FLAT_RATE);
 }
 
-/** SQL fragment: units of ?slug held by paid orders and unexpired pending orders. Binds: slug, now. */
+/** SQL fragment: units of ?1 (slug) held by paid orders and unexpired pending orders. ?2 = now. */
 const RESERVED_SQL = `
   SELECT COALESCE(SUM(oi.quantity), 0)
   FROM order_items oi JOIN orders o ON o.id = oi.order_id
@@ -75,136 +82,91 @@ export function newOrderNumber() {
   return "RP-" + Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
 }
 
-// ---------- Stripe (REST over fetch; no SDK needed on Workers) ----------
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-type FormValue = string | number | boolean | undefined | null | FormObject | FormValue[];
-interface FormObject {
-  [key: string]: FormValue;
+/** Shipping destinations we refuse before charging (live animals, continental US only). */
+export const NON_CONTINENTAL_STATES = new Set(["AK", "HI", "PR", "GU", "VI", "AS", "MP", "AA", "AE", "AP"]);
+export function looksLikePoBox(line: string) {
+  return /\b(p\.?\s*o\.?\s*box|post\s+office\s+box)\b/i.test(line);
 }
 
-/** Encodes nested objects the way Stripe expects: a[b][0][c]=v */
-export function stripeForm(obj: FormObject, prefix = "", out = new URLSearchParams()) {
-  for (const [key, value] of Object.entries(obj)) {
-    const name = prefix ? `${prefix}[${key}]` : key;
-    if (value === undefined || value === null) continue;
-    if (Array.isArray(value)) {
-      value.forEach((v, i) => {
-        if (v !== null && typeof v === "object") stripeForm(v as FormObject, `${name}[${i}]`, out);
-        else if (v !== undefined && v !== null) out.append(`${name}[${i}]`, String(v));
-      });
-    } else if (typeof value === "object") {
-      stripeForm(value, name, out);
-    } else {
-      out.append(name, String(value));
-    }
+// ---------- PayPal Orders v2 (REST over fetch) ----------
+
+function paypalBase(env: Env) {
+  return env.PAYPAL_ENV === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
+}
+
+let cachedToken: { value: string; expires: number; key: string } | null = null;
+
+async function paypalToken(env: Env) {
+  if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_CLIENT_SECRET) throw new Error("PayPal credentials are not configured");
+  const key = `${env.PAYPAL_ENV}:${env.PAYPAL_CLIENT_ID}`;
+  if (cachedToken && cachedToken.key === key && cachedToken.expires > Date.now() + 60_000) return cachedToken.value;
+  const res = await fetch(`${paypalBase(env)}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      authorization: `Basic ${btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_CLIENT_SECRET}`)}`,
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
+  const data = (await res.json()) as { access_token?: string; expires_in?: number; error_description?: string };
+  if (!res.ok || !data.access_token) throw new Error(`PayPal auth ${res.status}: ${data.error_description ?? "failed"}`);
+  cachedToken = { value: data.access_token, expires: Date.now() + (data.expires_in ?? 300) * 1000, key };
+  return data.access_token;
+}
+
+export class PayPalError extends Error {
+  constructor(
+    public status: number,
+    public body: { name?: string; message?: string; details?: { issue?: string; description?: string }[] }
+  ) {
+    super(`PayPal ${status}: ${body.details?.[0]?.issue ?? body.name ?? "error"} ${body.message ?? ""}`.trim());
   }
-  return out;
+  get issue() {
+    return this.body.details?.[0]?.issue ?? this.body.name ?? "";
+  }
 }
 
-export async function stripe<T = Record<string, unknown>>(
+export async function paypal<T = Record<string, unknown>>(
   env: Env,
   method: "GET" | "POST",
   path: string,
-  body?: FormObject,
-  idempotencyKey?: string
+  body?: unknown,
+  requestId?: string
 ): Promise<T> {
-  if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY is not configured");
   const headers: Record<string, string> = {
-    authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
-    "stripe-version": "2025-03-31.basil",
+    authorization: `Bearer ${await paypalToken(env)}`,
+    "content-type": "application/json",
+    prefer: "return=representation",
   };
-  if (body) headers["content-type"] = "application/x-www-form-urlencoded";
-  if (idempotencyKey) headers["idempotency-key"] = idempotencyKey;
-  const res = await fetch(`https://api.stripe.com/v1${path}`, {
+  if (requestId) headers["paypal-request-id"] = requestId;
+  const res = await fetch(`${paypalBase(env)}${path}`, {
     method,
     headers,
-    body: body ? stripeForm(body).toString() : undefined,
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
-  const data = (await res.json()) as T & { error?: { message?: string } };
-  if (!res.ok) throw new Error(`Stripe ${res.status}: ${data.error?.message ?? "unknown error"}`);
+  const data = (await res.json().catch(() => ({}))) as T;
+  if (!res.ok) throw new PayPalError(res.status, data as PayPalError["body"]);
   return data;
 }
 
-export interface StripeCheckoutSession {
+export interface PayPalAddress {
+  address_line_1?: string;
+  address_line_2?: string;
+  admin_area_2?: string; // city
+  admin_area_1?: string; // state
+  postal_code?: string;
+  country_code?: string;
+}
+
+export interface PayPalOrder {
   id: string;
-  url: string | null;
-  status: "open" | "complete" | "expired";
-  payment_status: "paid" | "unpaid" | "no_payment_required";
-  client_reference_id: string | null;
-  payment_intent: string | null;
-  amount_total: number | null;
-  customer_details: {
-    email: string | null;
-    name: string | null;
-    phone: string | null;
-    address: Record<string, string | null> | null;
-  } | null;
-  collected_information?: {
-    shipping_details?: { name: string; address: Record<string, string | null> } | null;
-  } | null;
-  shipping_details?: { name: string; address: Record<string, string | null> } | null;
+  status: "CREATED" | "SAVED" | "APPROVED" | "VOIDED" | "COMPLETED" | "PAYER_ACTION_REQUIRED";
+  payer?: { email_address?: string; name?: { given_name?: string; surname?: string }; phone?: { phone_number?: { national_number?: string } } };
+  purchase_units?: {
+    custom_id?: string;
+    shipping?: { name?: { full_name?: string }; address?: PayPalAddress };
+    payments?: { captures?: { id: string; status: string; amount: { value: string; currency_code: string } }[] };
+  }[];
 }
-
-/** Marks an order paid from a completed Checkout Session. Safe to call more than once. */
-export async function markOrderPaid(db: D1Database, session: StripeCheckoutSession) {
-  if (session.payment_status !== "paid" || !session.client_reference_id) return false;
-  const shipping = session.collected_information?.shipping_details ?? session.shipping_details ?? null;
-  const result = await db
-    .prepare(
-      `UPDATE orders SET
-         status = 'paid', paid_at = datetime('now'),
-         stripe_payment_intent = ?2, email = ?3, customer_name = ?4, phone = ?5,
-         shipping_name = ?6, shipping_address = ?7, total_cents = ?8
-       WHERE id = ?1 AND status != 'paid'`
-    )
-    .bind(
-      session.client_reference_id,
-      session.payment_intent,
-      session.customer_details?.email ?? null,
-      session.customer_details?.name ?? null,
-      session.customer_details?.phone ?? null,
-      shipping?.name ?? null,
-      shipping ? JSON.stringify(shipping.address) : null,
-      session.amount_total
-    )
-    .run();
-  return result.meta.changes > 0;
-}
-
-// ---------- Webhook signature (Stripe-Signature: t=...,v1=...) ----------
-
-export async function verifyStripeSignature(payload: string, header: string | null, secret: string) {
-  if (!header || !secret) return false;
-  const parts = Object.fromEntries(
-    header.split(",").map((kv) => {
-      const i = kv.indexOf("=");
-      return [kv.slice(0, i), kv.slice(i + 1)];
-    })
-  );
-  const signatures = header
-    .split(",")
-    .filter((kv) => kv.startsWith("v1="))
-    .map((kv) => kv.slice(3));
-  const timestamp = Number(parts.t);
-  if (!timestamp || Math.abs(nowSeconds() - timestamp) > 300) return false;
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${timestamp}.${payload}`));
-  const expected = Array.from(new Uint8Array(mac), (b) => b.toString(16).padStart(2, "0")).join("");
-  return signatures.some((sig) => timingSafeEqual(sig, expected));
-}
-
-function timingSafeEqual(a: string, b: string) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-}
-
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;

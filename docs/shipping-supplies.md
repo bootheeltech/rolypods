@@ -53,11 +53,11 @@ Your site charges **$12.50** flat (free over $75). Real cost per box is roughly:
 | Cup, moss, fill, tape | $1 | $1.50 |
 | **Total** | **$14.25** | **$24.50** |
 
-That means you likely **lose $2 to $12 on every shipped order**, and much more on free-shipping orders over $75. Before launch, consider raising shipping to about $15.99 (or $14.99 plus a "winter heat pack" line) and moving the free-shipping threshold to $100. Both values live in `src/lib/shipping.ts`; changing them updates the cart, checkout, Stripe, and structured data together.
+That means you likely **lose $2 to $12 on every shipped order**, and much more on free-shipping orders over $75. Before launch, consider raising shipping to about $15.99 (or $14.99 plus a "winter heat pack" line) and moving the free-shipping threshold to $100. Both values live in `src/lib/shipping.ts`; changing them updates the cart, checkout, PayPal, and structured data together.
 
 ## 5. Rules and paperwork
 
 - **USPS mailability:** isopods qualify under Publication 52 section 526.6 (small, harmless, cold-blooded animals and nonpoisonous insects). They must arrive in good condition within normal transit time, need no food, water, or attention in transit, and not leak or smell. Packaging must meet section 522.
-- **Sales tax:** Missouri sales tax applies to in-state retail sales. Talk to your accountant about registering with the Missouri DOR and whether to turn on Stripe Tax before your first Missouri order. Checkout does not currently collect tax.
-- **Stripe:** finish account verification (business details, bank account) **before** launch day so payouts aren't held. Describe the business plainly as "captive-bred live isopods (pet invertebrates)".
-- **Address limits:** Stripe can only restrict to "US", so someone could still enter an Alaska, Hawaii, or PO box address. Check every order's address before packing and refund any you can't ship.
+- **Sales tax:** Missouri sales tax applies to in-state retail sales. Talk to your accountant about registering with the Missouri DOR and whether you need to start collecting tax before your first Missouri order (the site would need a small change to add it). Checkout does not currently collect tax.
+- **PayPal:** link and verify your bank account before launch day so withdrawals aren't held. New PayPal business accounts can have funds held for up to about 21 days until you build sales history; adding tracking numbers to each sale in PayPal speeds up release.
+- **Address limits:** checkout refuses Alaska, Hawaii, US territories, and obvious PO boxes before charging. Still glance at each address before packing.

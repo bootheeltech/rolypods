@@ -20,9 +20,9 @@ export default function CheckoutSuccessPage() {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    const sessionId = new URLSearchParams(window.location.search).get("session_id");
-    const request = sessionId
-      ? fetch(`/api/order?session_id=${encodeURIComponent(sessionId)}`, { cache: "no-store" })
+    const orderId = new URLSearchParams(window.location.search).get("order");
+    const request = orderId
+      ? fetch(`/api/order?id=${encodeURIComponent(orderId)}`, { cache: "no-store" })
       : Promise.reject(new Error("missing session"));
     request
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
@@ -41,7 +41,7 @@ export default function CheckoutSuccessPage() {
       <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6">
         <h1 className="font-serif text-3xl font-bold text-bark dark:text-cream">We couldn&apos;t load your order</h1>
         <p className="mt-3 text-bark/70 dark:text-cream-dark/80">
-          If you completed payment, your receipt is on its way from Stripe and your order is safe. Questions? Email{" "}
+          If you completed payment, your receipt is on its way from PayPal and your order is safe. Questions? Email{" "}
           <a href="mailto:support@rolypods.com" className="underline">
             support@rolypods.com
           </a>
@@ -74,7 +74,7 @@ export default function CheckoutSuccessPage() {
         {paid && order.email && (
           <>
             {" "}
-            A receipt is on its way to <strong>{order.email}</strong>.
+            PayPal is emailing your receipt to <strong>{order.email}</strong>.
           </>
         )}
       </p>

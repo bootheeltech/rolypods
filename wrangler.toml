@@ -1,12 +1,15 @@
 # Cloudflare Pages config for rolypods.com (project "rolypods", auto-deploys from GitHub master).
 # Once this file exists, Pages reads bindings from here instead of the dashboard.
-# Secrets are NOT stored here. Set them with:
-#   npx wrangler pages secret put STRIPE_SECRET_KEY --project-name rolypods
-#   npx wrangler pages secret put STRIPE_WEBHOOK_SECRET --project-name rolypods
+# Secrets are NOT stored here. Production (live PayPal app):
+#   npx wrangler pages secret put PAYPAL_CLIENT_ID --project-name rolypods
+#   npx wrangler pages secret put PAYPAL_CLIENT_SECRET --project-name rolypods
+# Preview branches (PayPal sandbox app): add --env preview to both commands.
 name = "rolypods"
 pages_build_output_dir = "out"
 compatibility_date = "2026-07-26"
-# Optional: set SITE_URL as a var to force redirect URLs; otherwise the request origin is used.
+
+[vars]
+PAYPAL_ENV = "live"
 
 [[d1_databases]]
 binding = "DB"
@@ -14,3 +17,13 @@ database_name = "rolypods"
 database_id = "541834ea-f38d-4ae5-8e66-1988b3d7937f"
 migrations_dir = "migrations"
 
+# Preview deployments (any branch other than master) talk to the PayPal sandbox.
+# They share the production database, so clear test orders before launch (see docs/LAUNCH.md).
+[env.preview.vars]
+PAYPAL_ENV = "sandbox"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "rolypods"
+database_id = "541834ea-f38d-4ae5-8e66-1988b3d7937f"
+migrations_dir = "migrations"

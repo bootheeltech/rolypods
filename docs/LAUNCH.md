@@ -2,61 +2,55 @@
 
 Code for launch is in the repo. These are the steps that need a person (accounts, secrets, dashboard settings).
 
-Already done: D1 database `rolypods` created in Cloudflare and migration `0001_init.sql` applied remotely (100 Dairy Cows in `inventory`).
+Already done: D1 database `rolypods` created in Cloudflare, migrations `0001_init.sql` and `0002_paypal.sql` applied remotely (100 Dairy Cows in `inventory`).
 
-## 1. Stripe (payments)
+Payments run through **PayPal** (Stripe declined the account in Nov 2026). Buyers can pay with a PayPal account, Venmo, or a debit/credit card without a PayPal account. PayPal collects the shipping address and emails the receipt.
 
-1. Create or finish the Stripe account at dashboard.stripe.com and complete verification (business info, bank account, identity). Business description: "captive-bred live isopods (pet invertebrates)".
-2. Settings > Customer emails: turn on **Successful payments** and **Refunds** receipts.
-3. Settings > Business > Public details: set support email `support@rolypods.com` and statement descriptor `ROLYPODS`.
-4. Turn on email notifications for yourself for successful payments (Settings > Team and security > Communication preferences) and install the Stripe phone app so you hear about orders right away.
-5. Developers > API keys: copy the **test** secret key first (`sk_test_...`), then the live one when you're ready.
+## 1. PayPal Business account
 
-## 2. Secrets in Cloudflare Pages
+1. Sign up or upgrade at paypal.com/business. Business type and name: same as you'd give any processor (RolyPods as the public name).
+2. Confirm your email and link and verify your bank account so withdrawals work.
+3. Account Settings > Business information: customer service email `support@rolypods.com`, and set the credit card statement name to `ROLYPODS`.
+4. Install the PayPal Business app so you get a notification for every sale.
 
-From `C:\Dev\rolypods`:
+## 2. API credentials (developer.paypal.com)
+
+Log in to developer.paypal.com with the same PayPal login. Go to **Apps & Credentials**.
+
+- **Sandbox** tab: open the "Default Application" (or create an app named `rolypods-website`). Copy its **Client ID** and **Secret**. Sandbox > Accounts also lists a fake **personal** (buyer) account you can log in with for test purchases.
+- **Live** tab: create an app named `rolypods-website`, then copy its **Client ID** and **Secret**.
+
+## 3. Put the credentials in Cloudflare
+
+From `C:\Dev\rolypods`. Each command asks you to paste the value.
+
+Preview (sandbox credentials):
 
 ```bash
-npx wrangler pages secret put STRIPE_SECRET_KEY --project-name rolypods
+npx wrangler pages secret put PAYPAL_CLIENT_ID --project-name rolypods --env preview
 ```
 
 ```bash
-npx wrangler pages secret put STRIPE_WEBHOOK_SECRET --project-name rolypods
+npx wrangler pages secret put PAYPAL_CLIENT_SECRET --project-name rolypods --env preview
 ```
 
-Use the test key and test webhook secret first, run a test order, then replace both with live values.
+Production (live credentials): the same two commands without `--env preview`.
 
-## 3. Stripe webhook
+`wrangler.toml` already sets `PAYPAL_ENV` to `sandbox` on previews and `live` on production. Secrets only apply to new deployments: after setting them, retry the latest deployment in the Pages dashboard or push a commit.
 
-Developers > Webhooks > Add endpoint:
+No webhook is needed: the site confirms each payment with PayPal directly before showing the order as paid.
 
-- URL: `https://rolypods.com/api/stripe-webhook`
-- Events: `checkout.session.completed`, `checkout.session.expired`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`
-- Copy the signing secret (`whsec_...`) into `STRIPE_WEBHOOK_SECRET` (step 2).
+## 4. Test order on the preview
 
-Test mode and live mode each have their own webhook endpoint and secret.
+Preview: https://launch.rolypods.pages.dev (branch `launch`, not indexed, **shares the production database**).
 
-## 4. Deploy
-
-Push to `master`. Cloudflare Pages builds (`npm run build`) and deploys automatically. The new `wrangler.toml` binds the D1 database. After the deploy, a new deployment is needed for secrets to take effect if you set them afterward (push again or "Retry deployment" in the Pages dashboard).
-
-## 5. Test order (test mode)
-
-Test on the preview first: https://launch.rolypods.pages.dev (branch `launch`, not indexed by search engines, uses the same D1 database as production).
-
-- Preview secrets are separate from production. Set the **test** key on preview only:
-  `npx wrangler pages secret put STRIPE_SECRET_KEY --project-name rolypods --env preview`
-  `npx wrangler pages secret put STRIPE_WEBHOOK_SECRET --project-name rolypods --env preview`
-- Test-mode webhook URL for the preview: `https://launch.rolypods.pages.dev/api/stripe-webhook`. Optional: the success page confirms payment with Stripe directly if the webhook hasn't arrived.
-- Secrets only apply to new deployments: after setting them, Pages dashboard > rolypods > Deployments > the latest `launch` preview > Retry deployment (or push any commit to `launch`).
-
-1. Buy 1 Dairy Cow on the site. Card `4242 4242 4242 4242`, any future date, any CVC.
-2. Confirm the success page shows an order number, the Stripe dashboard shows the payment, and this returns the order as `paid`:
-   `npx wrangler d1 execute rolypods --remote --command "SELECT order_number, status, email FROM orders ORDER BY created_at DESC LIMIT 5"`
-3. Start a second checkout and click back on the Stripe page: stock should return right away.
-4. Delete the test orders (before any real orders exist) so they don't hold stock:
+1. Add 1 Dairy Cow, tick the agreement, click the PayPal button, and log in with the sandbox **personal** account (or use "Debit or Credit Card" with a sandbox test card from developer.paypal.com > Card Testing).
+2. Confirm the success page shows an order number, the sandbox business account shows the payment, and this returns `paid`:
+   `npx wrangler d1 execute rolypods --remote --command "SELECT order_number, status, email, shipping_address FROM orders ORDER BY created_at DESC LIMIT 5"`
+3. Start a second checkout and close the PayPal window: the site should say nothing was charged and the stock comes straight back.
+4. Before real customers buy, delete the test orders so they don't hold stock:
    `npx wrangler d1 execute rolypods --remote --command "DELETE FROM order_items; DELETE FROM orders"`
-5. Swap both secrets to live values and redeploy.
+5. Set the live credentials on production (step 3) and merge `launch` into `master`.
 
 ## 6. Cloudflare settings for AI search (dashboard: rolypods.com zone)
 
@@ -81,6 +75,6 @@ Your live robots.txt is currently being **replaced by Cloudflare's managed robot
 
 ## 9. Launch-day ops
 
-- New orders: Stripe app notifications, plus the "orders to ship" command in `docs/claude-project.md`.
-- Check every address before packing (Stripe can't block AK, HI, PR, or PO boxes).
+- New orders: PayPal Business app notifications, plus the "orders to ship" command in `docs/claude-project.md`.
+- The site refuses Alaska, Hawaii, US territories, and obvious PO boxes before charging, but still glance at each address before packing.
 - Supplies list: `docs/shipping-supplies.md`.

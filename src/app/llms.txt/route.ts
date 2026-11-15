@@ -19,7 +19,7 @@ export function GET() {
 
 > ${SITE_DESCRIPTION}
 
-RolyPods (rolypods.com) is a small US isopod breeder that sells live, captive-bred isopods online and ships them in insulated boxes by USPS Priority Mail to the continental United States. Every order has a live arrival guarantee. Shipping is $${SHIPPING_FLAT_RATE.toFixed(2)} flat, free over $${FREE_SHIPPING_THRESHOLD}. Orders ship Monday through Wednesday. Payment is by card, Apple Pay, or Google Pay through Stripe. Contact: ${SUPPORT_EMAIL}.
+RolyPods (rolypods.com) is a small US isopod breeder that sells live, captive-bred isopods online and ships them in insulated boxes by USPS Priority Mail to the continental United States. Every order has a live arrival guarantee. Shipping is $${SHIPPING_FLAT_RATE.toFixed(2)} flat, free over $${FREE_SHIPPING_THRESHOLD}. Orders ship Monday through Wednesday. Payment is through PayPal: a PayPal account, Venmo, or a debit or credit card without a PayPal account. Contact: ${SUPPORT_EMAIL}.
 
 ## Available now
 

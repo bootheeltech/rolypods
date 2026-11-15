@@ -1,32 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { getProduct } from "@/lib/products";
 import { FREE_SHIPPING_THRESHOLD, shippingFor } from "@/lib/shipping";
-import { fetchStock, useLiveStock } from "@/lib/useLiveStock";
+import { useLiveStock } from "@/lib/useLiveStock";
 import ProductImage from "@/components/ProductImage";
 
 export default function CartPage() {
   const { items, setQuantity, removeItem, subtotal } = useCart();
   const stock = useLiveStock();
-
-  // Coming back from Stripe without paying: release the held stock right away.
-  useEffect(() => {
-    const orderId = new URLSearchParams(window.location.search).get("canceled");
-    if (!orderId) return;
-    fetch("/api/checkout/cancel", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ orderId }),
-    })
-      .catch(() => undefined)
-      .finally(() => {
-        fetchStock(true);
-        window.history.replaceState(null, "", "/cart");
-      });
-  }, []);
 
   if (items.length === 0) {
     return (

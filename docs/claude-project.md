@@ -16,7 +16,7 @@ I run it alongside my day job at Bootheel Tech (an MSP), so I want answers that 
 - **Waitlist only (not for sale yet):** Powder Blue, Montenegro, Rubber Ducky, Zebra, Spanish Orange, Clown, Giant Canyon, Purple, Classic Pillbug. Customers can join a waitlist per species or a general "new species" list.
 - **Shipping:** $12.50 flat, free over $75. Ships Monday through Wednesday only. Weather hold if the route is below 35°F or above 90°F. Heat packs in cold months, cold packs in hot months.
 - **Live arrival guarantee:** Customer emails photos to support@rolypods.com within 4 hours of delivery with the order number; I replace or refund the dead animals, their choice. No returns on live animals.
-- **Payments:** Stripe Checkout (card, Apple Pay, Google Pay). Stripe collects the shipping address and phone and sends receipts.
+- **Payments:** PayPal (PayPal account, Venmo, or debit/credit card without an account). PayPal collects the shipping address and sends receipts. Stripe declined the account in Nov 2026 as too risky for live animals, so don't suggest Stripe or Stripe-based tools (Shopify Payments also runs on Stripe).
 - **Support email:** support@rolypods.com (Microsoft 365).
 
 ## Isopod facts to keep straight
@@ -31,8 +31,8 @@ I run it alongside my day job at Bootheel Tech (an MSP), so I want answers that 
 - Next.js 16 static export (`output: "export"`) plus Cloudflare Pages Functions in `functions/api/` for the store backend. Tailwind v4. No server framework.
 - Product catalog: `src/lib/products.ts`. `inStock: true` makes a species buyable; `false` makes it waitlist only. Prices are read from this file on the server, so the browser can't change them.
 - Database: Cloudflare D1 `rolypods` (binding `DB`). Tables: `inventory` (total units per species), `orders`, `order_items`, `waitlist`. Live stock = inventory total minus paid orders minus checkouts in progress (held 35 minutes).
-- Endpoints: `GET /api/stock`, `POST /api/waitlist`, `POST /api/checkout` (reserves stock, creates the Stripe session), `POST /api/checkout/cancel`, `GET /api/order`, `POST /api/stripe-webhook`.
-- Secrets live in Cloudflare Pages (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`), never in the repo.
+- Endpoints: `GET /api/stock`, `POST /api/waitlist`, `POST /api/paypal/create-order` (reserves stock, creates the PayPal order), `POST /api/paypal/capture-order` (rejects AK/HI/territories/PO boxes, then charges), `POST /api/checkout/cancel`, `GET /api/order`, `GET /api/paypal/config`.
+- Secrets live in Cloudflare Pages (`PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`; sandbox ones on previews), never in the repo. `PAYPAL_ENV` is set in `wrangler.toml`.
 - SEO: per-page titles and canonicals, Product/Offer/FAQ/Breadcrumb JSON-LD, `sitemap.xml`, `robots.txt` (open to Google, Bing, and AI assistants), `llms.txt`, generated share images.
 
 ### Common tasks and the exact commands
@@ -50,7 +50,7 @@ Run from `C:\Dev\rolypods`.
 - **Add more Dairy Cows (example: 50 more):**
   `npx wrangler d1 execute rolypods --remote --command "UPDATE inventory SET quantity_total = quantity_total + 50 WHERE slug='dairy-cow-isopod'"`
 - **Launch a new species:** set `inStock: true` and `stockCount` in `products.ts`, add an inventory row (`INSERT INTO inventory (slug, quantity_total) VALUES ('zebra-isopod', 30)`), push to `master`, then email that species' waitlist.
-- **Refunds:** done in the Stripe dashboard. A refunded order does not automatically return stock; add it back with the inventory command if the animals are still here.
+- **Refunds:** done in PayPal (Activity > the payment > Issue refund). A refunded order does not automatically return stock; add it back with the inventory command if the animals are still here.
 
 ## How I want you to help
 
