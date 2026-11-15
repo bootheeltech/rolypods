@@ -42,6 +42,14 @@ Push to `master`. Cloudflare Pages builds (`npm run build`) and deploys automati
 
 ## 5. Test order (test mode)
 
+Test on the preview first: https://launch.rolypods.pages.dev (branch `launch`, not indexed by search engines, uses the same D1 database as production).
+
+- Preview secrets are separate from production. Set the **test** key on preview only:
+  `npx wrangler pages secret put STRIPE_SECRET_KEY --project-name rolypods --env preview`
+  `npx wrangler pages secret put STRIPE_WEBHOOK_SECRET --project-name rolypods --env preview`
+- Test-mode webhook URL for the preview: `https://launch.rolypods.pages.dev/api/stripe-webhook`. Optional: the success page confirms payment with Stripe directly if the webhook hasn't arrived.
+- Secrets only apply to new deployments: after setting them, Pages dashboard > rolypods > Deployments > the latest `launch` preview > Retry deployment (or push any commit to `launch`).
+
 1. Buy 1 Dairy Cow on the site. Card `4242 4242 4242 4242`, any future date, any CVC.
 2. Confirm the success page shows an order number, the Stripe dashboard shows the payment, and this returns the order as `paid`:
    `npx wrangler d1 execute rolypods --remote --command "SELECT order_number, status, email FROM orders ORDER BY created_at DESC LIMIT 5"`
