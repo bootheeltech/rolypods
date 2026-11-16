@@ -1,7 +1,7 @@
 // Shared helpers for the Cloudflare Pages Functions in /functions.
 // Prices always come from src/lib/products.ts on the server; the browser only sends slugs and quantities.
 
-import { getProduct, isPurchasable, products } from "../src/lib/products";
+import { getProduct, isPurchasable, lineName, products } from "../src/lib/products";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FLAT_RATE } from "../src/lib/shipping";
 
 export interface Env {
@@ -13,7 +13,7 @@ export interface Env {
   PAYPAL_ENV?: string;
 }
 
-export { getProduct, isPurchasable, products };
+export { getProduct, isPurchasable, lineName, products };
 
 export function json(data: unknown, status = 200, headers: HeadersInit = {}) {
   return new Response(JSON.stringify(data), {

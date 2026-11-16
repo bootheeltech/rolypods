@@ -12,7 +12,7 @@ I run it alongside my day job at Bootheel Tech (an MSP), so I want answers that 
 
 ## Current status (launched November 2026)
 
-- **For sale:** Dairy Cow isopods (Porcellio laevis 'Dairy Cow'), $8 each. Launch stock: 100.
+- **For sale:** Dairy Cow isopods (Porcellio laevis 'Dairy Cow'), sold only in **containers of 25 for $19.99**. Launch stock: 4 containers (100 isopods). Price set Nov 2026 at about 15% under the 25-count market (Dubia Roaches and Reptile Supply $22, FrogDaddy $22.99, TC Insects $24.99 to $29.99). Stock in the database counts containers, not isopods.
 - **Waitlist only (not for sale yet):** Powder Blue, Montenegro, Rubber Ducky, Zebra, Spanish Orange, Clown, Giant Canyon, Purple, Classic Pillbug. Customers can join a waitlist per species or a general "new species" list.
 - **Shipping:** $12.50 flat, free over $75. Ships Monday through Wednesday only. Weather hold if the route is below 35°F or above 90°F. Heat packs in cold months, cold packs in hot months.
 - **Live arrival guarantee:** Customer emails photos to support@rolypods.com within 4 hours of delivery with the order number; I replace or refund the dead animals, their choice. No returns on live animals.
@@ -47,8 +47,8 @@ Run from `C:\Dev\rolypods`.
   `npx wrangler d1 execute rolypods --remote --command "UPDATE orders SET shipped_at=datetime('now'), tracking_number='9400...' WHERE order_number='RP-XXXXXXXX'"`
 - **Waitlist export:**
   `npx wrangler d1 execute rolypods --remote --command "SELECT slug, email, created_at FROM waitlist WHERE notified_at IS NULL ORDER BY slug, created_at"`
-- **Add more Dairy Cows (example: 50 more):**
-  `npx wrangler d1 execute rolypods --remote --command "UPDATE inventory SET quantity_total = quantity_total + 50 WHERE slug='dairy-cow-isopod'"`
+- **Add more Dairy Cow containers (example: 2 more containers = 50 isopods):**
+  `npx wrangler d1 execute rolypods --remote --command "UPDATE inventory SET quantity_total = quantity_total + 2 WHERE slug='dairy-cow-isopod'"`
 - **Launch a new species:** set `inStock: true` and `stockCount` in `products.ts`, add an inventory row (`INSERT INTO inventory (slug, quantity_total) VALUES ('zebra-isopod', 30)`), push to `master`, then email that species' waitlist.
 - **Refunds:** done in PayPal (Activity > the payment > Issue refund). A refunded order does not automatically return stock; add it back with the inventory command if the animals are still here.
 

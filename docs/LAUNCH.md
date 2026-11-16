@@ -2,7 +2,7 @@
 
 Code for launch is in the repo. These are the steps that need a person (accounts, secrets, dashboard settings).
 
-Already done: D1 database `rolypods` created in Cloudflare, migrations `0001_init.sql` and `0002_paypal.sql` applied remotely (100 Dairy Cows in `inventory`).
+Already done: D1 database `rolypods` created in Cloudflare, migrations `0001_init.sql` and `0002_paypal.sql` applied remotely (`inventory` counts **containers of 25**: Dairy Cow starts at 4 containers = 100 isopods).
 
 Payments run through **PayPal** (Stripe declined the account in Nov 2026). Buyers can pay with a PayPal account, Venmo, or a debit/credit card without a PayPal account. PayPal collects the shipping address and emails the receipt.
 

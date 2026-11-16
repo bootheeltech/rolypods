@@ -1,4 +1,4 @@
-import { getProduct, products } from "@/lib/products";
+import { getProduct, priceLabel, products } from "@/lib/products";
 import { OG_SIZE, renderOgImage } from "@/lib/ogImage";
 
 export const dynamic = "force-static";
@@ -16,7 +16,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   return renderOgImage({
     title: p.name,
     subtitle: p.scientificName,
-    badge: p.inStock ? `$${p.price.toFixed(2)} ${p.unit} · Shipping now` : "Join the waitlist",
+    badge: p.inStock ? `${priceLabel(p)} · Shipping now` : "Join the waitlist",
     colors: p.colors,
     pattern: p.pattern,
     photo: p.photos?.[0]?.file,

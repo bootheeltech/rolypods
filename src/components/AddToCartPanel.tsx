@@ -54,7 +54,11 @@ export default function AddToCartPanel({ product }: { product: Product }) {
   return (
     <div className="space-y-3">
       <p className="text-sm font-medium text-moss">
-        {available <= 20 ? `Only ${available} left in this batch` : `${available} available, ready to ship`}
+        {product.packSize
+          ? `${available} container${available === 1 ? "" : "s"} left · ${product.packSize} isopods each`
+          : available <= 20
+            ? `Only ${available} left in this batch`
+            : `${available} available, ready to ship`}
         {inCart > 0 && <span className="text-bark/60 dark:text-cream-dark/70"> · {inCart} in your cart</span>}
       </p>
       {canAdd === 0 ? (

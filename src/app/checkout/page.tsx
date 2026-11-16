@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { getProduct } from "@/lib/products";
+import { getProduct, lineName } from "@/lib/products";
 import { shippingFor } from "@/lib/shipping";
 import { fetchStock } from "@/lib/useLiveStock";
 import PayPalCheckout from "@/components/PayPalCheckout";
@@ -106,7 +106,7 @@ export default function CheckoutPage() {
               return (
                 <li key={item.slug} className="flex justify-between text-sm">
                   <span className="text-bark/80 dark:text-cream-dark/90">
-                    {product.name} × {item.quantity}
+                    {lineName(product)} × {item.quantity}
                   </span>
                   <span className="font-medium text-bark dark:text-cream">
                     ${(product.price * item.quantity).toFixed(2)}

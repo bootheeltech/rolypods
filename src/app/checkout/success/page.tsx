@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { getProduct } from "@/lib/products";
+import { getProduct, lineName } from "@/lib/products";
 import { fetchStock } from "@/lib/useLiveStock";
 
 interface OrderInfo {
@@ -83,7 +83,11 @@ export default function CheckoutSuccessPage() {
         {order.items.map((i) => (
           <li key={i.slug} className="flex justify-between">
             <span>
-              {getProduct(i.slug)?.name ?? i.slug} × {i.quantity}
+              {(() => {
+                const p = getProduct(i.slug);
+                return p ? lineName(p) : i.slug;
+              })()}{" "}
+              × {i.quantity}
             </span>
             <span>${((i.unit_price_cents * i.quantity) / 100).toFixed(2)}</span>
           </li>

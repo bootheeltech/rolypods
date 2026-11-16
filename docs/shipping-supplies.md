@@ -1,14 +1,14 @@
 # Day-one shipping supplies: RolyPods launch
 
-Goal: be able to pack and ship every order from the first 100 Dairy Cows within the first week, in November weather.
+Goal: be able to pack and ship every order from the first 100 Dairy Cows (4 containers of 25) within the first week, in November weather.
 
-**Planning assumption:** orders average 5 to 10 isopods, so 100 isopods is roughly **10 to 20 shipments**. Buy for **25** so you have spares for replacements (live arrival claims) and mistakes. Prices are rough retail ranges; shop around (Amazon, Uline, Josh's Frogs supply, Pirate Ship for labels).
+**Planning assumption:** Dairy Cows sell in containers of 25, so the first 100 isopods is **at most 4 shipments** (fewer if someone buys 2 or more containers). The quantities below are sized for the next few batches too; at launch you need only about 5 boxes, 5 cups and 10 heat packs, plus spares for replacements (live arrival claims). Prices are rough retail ranges; shop around (Amazon, Uline, Josh's Frogs supply, Pirate Ship for labels).
 
 ## 1. Must have before the first order
 
 | Item | Qty for launch | Approx. cost | Notes |
 |---|---|---|---|
-| 8 oz deli cups with lids | 50 | $12-18 | Poke 6-10 pin holes in the lid (or buy pre-vented). One cup per order; use a 16 oz cup for 20+ isopods. |
+| 16 oz deli cups with lids | 25 | $10-15 | One cup per container of 25. Poke 6-10 pin holes in the lid (or buy pre-vented). |
 | Long-fiber sphagnum moss | 1 bag | $12-15 | Dampen and wring out until barely moist. This is their humidity and cushioning in transit. |
 | Leaf litter and a small piece of bark | from your colony | $0 | A pinch per cup gives them something to grip and hide under. No food is needed in transit. |
 | Insulated shipping boxes (about 8x6x6, foam-lined) | 25 | $4-7 each | Foam-walled "insulated shipper" kits or a cardboard box with a foam or reflective bubble liner. Small is better: less air to heat. |
@@ -34,7 +34,7 @@ Goal: be able to pack and ship every order from the first 100 Dairy Cows within 
 
 ## 3. How to pack a winter order
 
-1. Count isopods into a vented deli cup with damp sphagnum and a pinch of leaf litter. Common hobby practice is to add 1 or 2 extras per order as a buffer; if you do that, remember it eats into the 100.
+1. Count isopods into a vented deli cup with damp sphagnum and a pinch of leaf litter. Use one 16 oz cup per container of 25. Common hobby practice is to add 1 or 2 extras per container as a buffer; if you do, set aside a few beyond the 100 so all 4 containers can be filled.
 2. Put the cup in the insulated box, surround it with fill so it can't move.
 3. Activate the heat pack, wait a few minutes, and tape it to the **inside of the lid**, never touching the cup. Put a layer of paper between the pack and the cup side.
 4. Don't seal the foam lid airtight: heat packs need a little oxygen to keep working. Leave the foam lid resting in place and close the outer cardboard box normally.

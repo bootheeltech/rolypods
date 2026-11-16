@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProduct, photoSrc, products, type Product } from "@/lib/products";
+import { getProduct, photoSrc, priceLabel, products, type Product } from "@/lib/products";
 import { SHIPPING_FLAT_RATE } from "@/lib/shipping";
 import { absoluteUrl, productImageUrl, productUrl, SITE_NAME, SITE_URL } from "@/lib/site";
 import JsonLd from "@/components/JsonLd";
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? `${product.name}s for Sale (${product.scientificName.split(" '")[0]})`
     : `${product.name} (${product.scientificName}): Join the Waitlist`;
   const description = product.inStock
-    ? `Buy live ${product.name}s, $${product.price} ${product.unit}. ${product.tagline} Captive bred, shipped insulated with a live arrival guarantee.`
+    ? `Buy live ${product.name}s, ${priceLabel(product)}. ${product.tagline} Captive bred, shipped insulated with a live arrival guarantee.`
     : `${product.tagline} Join the RolyPods waitlist to be emailed when captive-bred ${product.name}s are ready to ship.`;
   return {
     title,
@@ -56,6 +56,9 @@ function productJsonLd(product: Product) {
         brand: { "@type": "Brand", name: SITE_NAME },
         additionalProperty: [
           { "@type": "PropertyValue", name: "Scientific name", value: product.scientificName },
+          ...(product.packSize
+            ? [{ "@type": "PropertyValue", name: "Isopods per container", value: product.packSize }]
+            : []),
           { "@type": "PropertyValue", name: "Difficulty", value: product.difficulty },
           { "@type": "PropertyValue", name: "Adult size", value: product.size },
           { "@type": "PropertyValue", name: "Temperature", value: product.temperature },

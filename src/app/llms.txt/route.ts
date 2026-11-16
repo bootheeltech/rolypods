@@ -1,5 +1,5 @@
 // /llms.txt: a plain-text summary of the store for AI assistants and answer engines (llmstxt.org format).
-import { products } from "@/lib/products";
+import { priceLabel, products } from "@/lib/products";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FLAT_RATE } from "@/lib/shipping";
 import { absoluteUrl, SHIPPING_FAQS, SITE_DESCRIPTION, SUPPORT_EMAIL } from "@/lib/site";
 
@@ -10,7 +10,7 @@ export function GET() {
   const waitlist = products.filter((p) => !p.inStock);
   const productLine = (p: (typeof products)[number]) =>
     `- [${p.name} (${p.scientificName})](${absoluteUrl(`/shop/${p.slug}`)}): ${
-      p.inStock ? `$${p.price.toFixed(2)} ${p.unit}, in stock.` : "waitlist only, not yet for sale."
+      p.inStock ? `${priceLabel(p)}, in stock.` : "waitlist only, not yet for sale."
     } ${p.difficulty}. Adult size ${p.size}, ${p.temperature}, humidity ${p.humidity}. ${p.tagline}`;
 
   const dairy = products.find((p) => p.slug === "dairy-cow-isopod");

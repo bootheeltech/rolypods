@@ -5,6 +5,7 @@ import {
   getProduct,
   isPurchasable,
   json,
+  lineName,
   money,
   newOrderNumber,
   nowSeconds,
@@ -76,7 +77,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       {
         error:
           left > 0
-            ? `Only ${left} ${shortLine.product.name}${left === 1 ? "" : "s"} left. Lower the quantity and try again.`
+            ? `Only ${left} ${shortLine.product.packSize ? `container${left === 1 ? "" : "s"} of ${shortLine.product.name}s` : `${shortLine.product.name}${left === 1 ? "" : "s"}`} left. Lower the quantity and try again.`
             : `${shortLine.product.name}s just sold out. Join the waitlist and we'll email you when more are ready.`,
         available: left,
         slug: shortLine.slug,
@@ -109,7 +110,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
               },
             },
             items: lines.map((l) => ({
-              name: l.product.name,
+              name: lineName(l.product),
               description: l.product.scientificName.slice(0, 127),
               sku: l.slug,
               quantity: String(l.quantity),

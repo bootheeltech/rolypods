@@ -6,7 +6,9 @@ export interface Product {
   scientificName: string;
   category: Category;
   price: number;
-  unit: string; // e.g. "each", "group of 5"
+  unit: string; // e.g. "each", "container of 25"
+  /** Isopods per container when sold by the container. Stock and quantities count containers. */
+  packSize?: number;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   size: string;
   temperature: string;
@@ -33,8 +35,9 @@ export const products: Product[] = [
     name: "Dairy Cow Isopod",
     scientificName: "Porcellio laevis 'Dairy Cow'",
     category: "common",
-    price: 8,
-    unit: "each",
+    price: 19.99,
+    unit: "container of 25",
+    packSize: 25,
     difficulty: "Beginner",
     size: "Up to 20mm",
     temperature: "70-85°F",
@@ -61,7 +64,11 @@ export const products: Product[] = [
       },
       {
         q: "How many Dairy Cow isopods should I start with?",
-        a: "Ten is a good starter colony. It gives you a healthy mix of males and females so the group starts breeding within a few weeks to a couple of months.",
+        a: "One container of 25 is a strong starter colony. It gives you a healthy mix of males and females, so the group starts breeding within a few weeks to a couple of months. Two containers get a large bioactive enclosure going faster.",
+      },
+      {
+        q: "What comes in a container?",
+        a: "25 live Dairy Cow isopods, captive bred by RolyPods, packed in a vented cup with damp moss and leaf litter for the trip, inside an insulated shipping box.",
       },
       {
         q: "Can Dairy Cow isopods be a cleanup crew?",
@@ -84,7 +91,7 @@ export const products: Product[] = [
     colors: ["#efe9dc", "#2a2a2a", "#232323"],
     pattern: "spotted",
     inStock: true,
-    stockCount: 100,
+    stockCount: 4,
   },
   {
     slug: "powder-blue-isopod",
@@ -325,6 +332,16 @@ export const products: Product[] = [
 /** Products that can be added to the cart and paid for. Everything else is waitlist only. */
 export function isPurchasable(slug: string) {
   return products.some((p) => p.slug === slug && p.inStock);
+}
+
+/** "$19.99 per container of 25" / "$8.00 each" */
+export function priceLabel(p: Product) {
+  return `$${p.price.toFixed(2)} ${p.unit === "each" ? "each" : `per ${p.unit}`}`;
+}
+
+/** Display name for one cart line, e.g. "Dairy Cow Isopod (25-count container)". */
+export function lineName(p: Product) {
+  return p.packSize ? `${p.name} (${p.packSize}-count container)` : p.name;
 }
 
 export function photoSrc(file: string, size: "lg" | "sm" = "lg") {
