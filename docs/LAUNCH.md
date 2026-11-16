@@ -52,13 +52,13 @@ Preview: https://launch.rolypods.pages.dev (branch `launch`, not indexed, **shar
    `npx wrangler d1 execute rolypods --remote --command "DELETE FROM order_items; DELETE FROM orders"`
 5. Set the live credentials on production (step 3) and merge `launch` into `master`.
 
-## 6. Cloudflare settings for AI search (dashboard: rolypods.com zone)
+## 6. AI crawlers (decided: keep Cloudflare's blocking on)
 
-Your live robots.txt is currently being **replaced by Cloudflare's managed robots.txt**, which blocks GPTBot, ClaudeBot, Google-Extended, Applebot-Extended, Amazonbot and others. That keeps RolyPods out of ChatGPT, Claude, Gemini, and Apple answers.
+Cloudflare's managed robots.txt for rolypods.com stays **on** (decision Nov 2026). It adds rules blocking AI *training* crawlers (GPTBot, ClaudeBot, Google-Extended, Applebot-Extended, Amazonbot, CCBot, Bytespider and others) in front of the site's own robots.txt.
 
-- Security > Bots (or AI Crawl Control): turn **off** "Manage your robots.txt" / "Instruct AI bot traffic with robots.txt".
-- Turn **off** "Block AI bots" if it's on.
-- Then check https://rolypods.com/robots.txt shows the site's own rules (starts with `User-Agent: *` and lists the AI bots as allowed).
+AI *answer* and search bots are not blocked, and the site's `src/app/robots.ts` explicitly allows them: Googlebot, Bingbot, OAI-SearchBot and ChatGPT-User (ChatGPT search), Claude-SearchBot and Claude-User, PerplexityBot and Perplexity-User, Applebot, DuckAssistBot. So Google (including AI Overviews), Bing/Copilot, ChatGPT search, Perplexity and Claude search can still find and cite the shop.
+
+Don't add training crawlers to `robots.ts`, or the file contradicts Cloudflare's rules. The separate "Block AI bots" switch in Security > Bots was not checked (the API token on Tim's PC can't read bot settings).
 
 ## 7. Search engines
 

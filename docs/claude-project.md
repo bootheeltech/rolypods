@@ -33,7 +33,7 @@ I run it alongside my day job at Bootheel Tech (an MSP), so I want answers that 
 - Database: Cloudflare D1 `rolypods` (binding `DB`). Tables: `inventory` (total units per species), `orders`, `order_items`, `waitlist`. Live stock = inventory total minus paid orders minus checkouts in progress (held 35 minutes).
 - Endpoints: `GET /api/stock`, `POST /api/waitlist`, `POST /api/paypal/create-order` (reserves stock, creates the PayPal order), `POST /api/paypal/capture-order` (rejects AK/HI/territories/PO boxes, then charges), `POST /api/checkout/cancel`, `GET /api/order`, `GET /api/paypal/config`.
 - Secrets live in Cloudflare Pages (`PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`; sandbox ones on previews), never in the repo. `PAYPAL_ENV` is set in `wrangler.toml`.
-- SEO: per-page titles and canonicals, Product/Offer/FAQ/Breadcrumb JSON-LD, `sitemap.xml`, `robots.txt` (open to Google, Bing, and AI assistants), `llms.txt`, generated share images.
+- SEO: per-page titles and canonicals, Product/Offer/FAQ/Breadcrumb JSON-LD, `sitemap.xml`, `robots.txt` (open to search engines and AI answer bots; Cloudflare blocks AI training crawlers on purpose), `llms.txt`, generated share images.
 
 ### Common tasks and the exact commands
 
