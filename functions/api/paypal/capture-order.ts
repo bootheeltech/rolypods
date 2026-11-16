@@ -52,6 +52,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
     // 1) Look at the approved order's ship-to address before taking money.
     const approved = await paypal<PayPalOrder>(env, "GET", `/v2/checkout/orders/${order.paypal_order_id}`);
+    if (approved.status !== "APPROVED") {
+      // Buyer hasn't finished in PayPal yet; keep the hold so they can still complete it.
+      return json({ error: "PayPal hasn't approved this payment yet. You have not been charged." }, 409);
+    }
     const addr = approved.purchase_units?.[0]?.shipping?.address;
     if (!addr || addr.country_code !== "US" || NON_CONTINENTAL_STATES.has((addr.admin_area_1 ?? "").toUpperCase())) {
       return release(
