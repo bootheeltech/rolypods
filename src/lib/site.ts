@@ -6,7 +6,7 @@ export const SITE_NAME = "RolyPods";
 export const SITE_TAGLINE = "Only for Fans of Isopods.";
 export const SUPPORT_EMAIL = "support@rolypods.com";
 export const SITE_DESCRIPTION =
-  "Buy live, captive-bred Dairy Cow isopods (Porcellio laevis) shipped in insulated boxes across the continental US with a live arrival guarantee. Waitlists open for Montenegro, Rubber Ducky, Zebra and more.";
+  "Live, captive-bred isopods from a small US breeder, shipped in insulated boxes across the continental US with a live arrival guarantee. Waitlists are open for Dairy Cow isopods (Porcellio laevis), Montenegro, Rubber Ducky, Zebra and more.";
 
 export function absoluteUrl(path = "/") {
   return new URL(path, SITE_URL).toString();
