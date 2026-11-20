@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "RolyPods | Live Isopods for Sale, Dairy Cow Isopods Shipped Live",
+    default: "RolyPods | Captive-Bred Isopods, Dairy Cow Isopods Coming Soon",
     template: "%s | RolyPods",
   },
   description: SITE_DESCRIPTION,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: SITE_NAME,
     url: SITE_URL,
-    title: "RolyPods | Live Isopods for Sale",
+    title: "RolyPods | Captive-Bred Isopods",
     description: SITE_DESCRIPTION,
     locale: "en_US",
   },

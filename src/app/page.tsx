@@ -23,7 +23,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
           <div>
             <span className="inline-block rounded-full bg-blush/15 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blush-dark">
-              Now shipping: Dairy Cow isopods
+              Coming soon: Dairy Cow isopods
             </span>
             <h1 className="mt-4 font-serif text-4xl font-bold leading-tight text-bark dark:text-cream sm:text-5xl">
               Common &amp; designer isopods,
@@ -31,16 +31,16 @@ export default function Home() {
             </h1>
             <p className="mt-5 max-w-lg text-lg text-bark/70 dark:text-cream-dark/80">
               RolyPods is a small-batch isopod breeder shipping across the
-              continental US. Our first batch of Dairy Cow isopods is ready
-              now, and every order comes with a live arrival guarantee. More
-              species are on the way: join the waitlist to hear first.
+              continental US. Our Dairy Cow isopods are growing out now, and
+              every order will come with a live arrival guarantee. Join a
+              waitlist and we&apos;ll email you the moment they&apos;re ready.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/shop/dairy-cow-isopod"
                 className="rounded-full bg-moss px-6 py-3 text-sm font-semibold text-white transition hover:bg-moss-dark"
               >
-                Shop Dairy Cows
+                Join the Dairy Cow waitlist
               </Link>
               <Link
                 href="/care"
@@ -85,7 +85,7 @@ export default function Home() {
               The Lineup
             </h2>
             <p className="mt-1 text-bark/70 dark:text-cream-dark/80">
-              Dairy Cows ship now. The rest are growing out in our colonies; join a waitlist to be first in line.
+              Every species is growing out in our colonies right now. Join a waitlist to be first in line.
             </p>
           </div>
           <Link href="/shop" className="hidden text-sm font-semibold text-moss hover:underline sm:inline">

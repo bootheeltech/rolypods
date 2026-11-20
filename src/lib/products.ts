@@ -90,7 +90,7 @@ export const products: Product[] = [
     ],
     colors: ["#efe9dc", "#2a2a2a", "#232323"],
     pattern: "spotted",
-    inStock: true,
+    inStock: false,
     stockCount: 4,
   },
   {

@@ -32,9 +32,8 @@ export default function ShopPage() {
         </h1>
         <p className="mt-3 text-bark/70 dark:text-cream-dark/80">
           Every isopod is captive-bred here at RolyPods and shipped with our
-          live arrival guarantee. Dairy Cows are available now. Every other
-          species is waitlist only while our colonies grow out; tap one to
-          join its list.
+          live arrival guarantee. Every species is waitlist only while our
+          colonies grow out. Tap one to join its list.
         </p>
       </div>
 

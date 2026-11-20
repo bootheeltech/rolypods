@@ -10,8 +10,8 @@ export default function Image() {
   const dairy = getProduct("dairy-cow-isopod")!;
   return renderOgImage({
     title: "Live isopods, shipped with care",
-    subtitle: "Captive-bred Dairy Cow isopods with a live arrival guarantee.",
-    badge: "Now shipping: Dairy Cows",
+    subtitle: "Captive-bred isopods with a live arrival guarantee.",
+    badge: "Coming soon: Dairy Cows",
     colors: dairy.colors,
     pattern: dairy.pattern,
     photo: dairy.photos?.[0]?.file,
