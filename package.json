@@ -13,7 +13,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply rolypods --remote"
   },
   "dependencies": {
-    "next": "16.2.12",
+    "next": "^16.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -24,7 +24,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "^16.4.6",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.162.0"
