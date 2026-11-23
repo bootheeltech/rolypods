@@ -1,4 +1,7 @@
 # Cloudflare Pages response headers.
+# The CSP below is Report-Only first so PayPal checkout cannot break. After a week with no CSP
+# warnings in the browser console (try a sandbox checkout on a preview branch), rename it to
+# Content-Security-Policy to enforce it.
 /opengraph-image
   Content-Type: image/png
   Cache-Control: public, max-age=86400
@@ -17,3 +20,6 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.paypal.com https://*.paypal.com https://*.paypalobjects.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.paypal.com https://*.paypalobjects.com; font-src 'self' data:; frame-src https://*.paypal.com https://*.venmo.com; connect-src 'self' https://*.paypal.com https://cloudflareinsights.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://*.paypal.com; object-src 'none'; upgrade-insecure-requests
